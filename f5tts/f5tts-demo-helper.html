@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>F5-TTS 演示助手</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+            .container { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+            h1 { color: #333; }
+            .step { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; }
+            .step-number { background: #4285f4; color: white; display: inline-block; width: 24px; height: 24px; text-align: center; border-radius: 50%; margin-right: 10px; }
+            textarea { width: 100%; height: 100px; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+            button { padding: 10px 15px; background: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+            .download-btn { background: #34a853; }
+            #audio-preview { margin: 15px 0; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>F5-TTS 演示助手</h1>
+            <p>這個工具會幫助你快速將 AI 回覆和參考音檔填入 F5-TTS 演示頁面。</p>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>先點擊下方按鈕下載參考音檔：</strong><br>
+                <button id="download-audio" class="download-btn">下載參考音檔</button>
+                <div id="audio-preview">
+                    <p>預覽參考音檔：</p>
+                    <audio controls id="audio-element"></audio>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>複製 AI 回覆文本：</strong><br>
+                <textarea id="reply-text" readonly>{agent_reply}</textarea>
+                <button id="copy-text">複製文本</button>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>開啟 F5-TTS 演示頁面並填入內容：</strong><br>
+                <button id="open-hf">開啟 F5-TTS 演示頁面</button>
+                <p>在頁面開啟後：</p>
+                <ol>
+                    <li>點擊"參考音檔"區域，上傳剛才下載的音檔</li>
+                    <li>在"輸入文本"區域貼上剛才複製的回覆文本</li>
+                    <li>點擊"生成"按鈕開始合成語音</li>
+                </ol>
+            </div>
+        </div>
+
+        <script>
+            // 設置音檔來源和預覽
+            const audioUrl = "{ref_audio_url}";
+            document.getElementById('download-audio').addEventListener('click', function() {
+                // 創建臨時連結下載音檔
+                const tempLink = document.createElement('a');
+                tempLink.href = audioUrl;
+                tempLink.download = 'reference_audio.wav'; // 設置下載檔名
+                document.body.appendChild(tempLink);
+                tempLink.click();
+                document.body.removeChild(tempLink);
+            });
+            
+            // 設置音檔預覽
+            document.getElementById('audio-element').src = audioUrl;
+            
+            // 複製按鈕功能
+            document.getElementById('copy-text').addEventListener('click', function() {
+                const replyTextArea = document.getElementById('reply-text');
+                replyTextArea.select();
+                document.execCommand('copy');
+                // 現代瀏覽器也支援新API
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(replyTextArea.value);
+                }
+                alert('文本已複製到剪貼簿！');
+            });
+            
+            // 開啟Hugging Face按鈕
+            document.getElementById('open-hf').addEventListener('click', function() {
+                const replyText = encodeURIComponent(document.getElementById('reply-text').value);
+                // 將文本帶到新分頁的 URL fragment
+                const url = 'https://huggingface.co/spaces/mrfakename/E2-F5-TTS#reply=' + replyText;
+                const newWin = window.open(url, '_blank');
+                // 嘗試自動複製文本到剪貼簿（需用戶互動）
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(document.getElementById('reply-text').value);
+                }
+                alert('已自動複製文本，請在新分頁貼上（Ctrl+V）到「輸入文本」區域，並手動上傳音檔。');
+            });
+        </script>
+    </body>
+</html>
